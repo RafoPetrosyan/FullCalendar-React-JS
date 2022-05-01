@@ -27,16 +27,25 @@ const Calendar = () => {
   const [modalState, setModalState] = useState(false);
   const [year, setYear] = useState(() => (searchParams.get('year') || moment().format('YYYY')));
   const [month, setMonth] = useState(() => (searchParams.get('month') || moment().format('M')));
-  // const [defaultDate, setDefaultDate] = useState(() => { 
-  //     return moment(`${searchParams.get('year')} ${searchParams.get('month')}`).format('LL'); 
-  // })
 
+
+  const calendarRef = useRef();
+
+  console.log(calendarRef.current);
 
 
   const defaultDate = moment('May 29, 2022').format('LL');
 
   const dispatch = useDispatch();
 
+  useEffect(() =>{
+      // let year = searchParams.get('year') || null
+      // calendarRef.props.defaultDate = 'May 29, 2022';
+      // calendarRef.updater._calendarApi.data.currentDate = moment('05/11/21').format();
+      // console.log(moment('05/11/21').format());
+  }, []);
+
+  
   
 
   // SET QUERY PARAMS AND GET DATA API
@@ -93,6 +102,7 @@ const Calendar = () => {
  
   };
 
+
   // function confirmImageUrl(url){
   //     return new Promise((resolve, reject) =>{
   //         const image = new Image();
@@ -111,7 +121,7 @@ const Calendar = () => {
  
 
   const renderEventContent = (event) => {
-    console.log('eventInfo', event);
+   
     return (
         <div className='content'>
               <b>{event.event._def.title}</b>
@@ -127,9 +137,13 @@ const Calendar = () => {
     <div className="background" >
       <div className="main">
 
-      
+
         <FullCalendar
-          defaultDate={defaultDate}
+        navLinks={true}
+          ref={calendarRef}
+        //  firstDay={1}
+          // gotToDate = {() => moment('05/11/21').format()}
+          // defaultDate={defaultDate}
           datesSet={(args) => monthChange(args)}
           dayMaxEvents={true}
           className='fullCalendar'
@@ -164,9 +178,9 @@ const Calendar = () => {
       </div>
       
       {modalState ?
-      <div className='backgroundModal' >
+      <div className='backgroundModal' aria-hidden="true">
         <div className="hoverModal" onClick={() => setModalState(null)}></div>
-        <div className="modal" style={{marginTop: `${window.scrollY + 100}px`}}>
+        <div className="modal" >
                 <div className="modalHeader">
                     <h1 className="h1">{modalState.event._def.title}</h1>
                 </div>
