@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { useSearchParams, createSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, createSearchParams } from 'react-router-dom';
 import _ from 'lodash';
 import moment from 'moment';
 import FullCalendar from '@fullcalendar/react';
@@ -20,7 +20,7 @@ const Calendar = () => {
   // GET REDUX DATA
   const calendarData = useSelector(state => state.calendarData.calendarData);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const calendarRef = useRef();
 
   // QUERY PARAMS
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,43 +32,34 @@ const Calendar = () => {
   const [month, setMonth] = useState(() => (searchParams.get('month') || `0${moment().format('M')}`));
 
 
-  const calendarRef = useRef();
-
   const getCalendarApi = () => {
       const { current } = calendarRef;
       return current?.getApi();
   };
 
+  // console.log(getCalendarApi());
+
+  const queryParams = useMemo(() => ({
+      year: isNaN(+year) ? moment().format('YYYY') : year,
+      month: isNaN(+month) ? `0${moment().format('M')}` : month,
+  }), [year, month]);
+
   useEffect(() => {
-      const currentDate = `${year}-${month}-01`;
+      const currentDate = `${queryParams.year}-${queryParams.month}-01`;
       const calendarApi = getCalendarApi();
       calendarApi.gotoDate(currentDate);
   }, []);
 
-  console.log(+month[1]);
   // SET QUERY PARAMS AND GET DATA API
   const getData = () => {
-      const query = {
-          year: year,
-          month: month,
-      }
-      setSearchParams(createSearchParams(query));
-      const url = `?year=${year}&month=${month}`;
+      setSearchParams(createSearchParams(queryParams));
+      const url = `?year=${queryParams.year}&month=${queryParams.month}`;
       dispatch(createAction(GET_DATA, url));
   }
   
   useEffect(() => {
-      // if(year && month) getData(); 
-      if(year && month){
-          if(+year < 2030 && +year > 1970 && +month[1] > 0 && +month[1] < 13){
-              getData();
-          }else{
-              // setYear(moment().format('YYYY'));
-              // setMonth(`0${moment().format('M')}`);
-              navigate('calendar')
-          }
-      }
-  }, [year, month]);
+      getData();
+  }, [queryParams]);
 
 
   useEffect(() => {
@@ -153,25 +144,20 @@ const Calendar = () => {
   }
 
 
-
   return (
-    <>
     <div className="background" >
       <div className="main">
 
-
         <FullCalendar
-        navLinks={true}
+          timeZone="local"
+          navLinks={true}
           ref={calendarRef}
-        //  firstDay={1}
-          // gotToDate = {() => moment('05/11/21').format()}
           // defaultDate={defaultDate}
           datesSet={(args) => monthChange(args)}
           dayMaxEvents={true}
           className='fullCalendar'
           eventClick={eventClick}
           defaultView="dayGridMonth"
-          // rerenderDelay={10}
           eventDurationEditable={false}
           // progressiveEventRendering={true}
           editable={true}
@@ -211,15 +197,10 @@ const Calendar = () => {
                     <button className="delete" onClick={() => setModalState(null)}>Delete</button>
                     <button className="close" onClick={() => setModalState(null)}>Close</button>
                 </div>
-                  
         </div>
       </div> : null}
         
     </div>
-
-   
-    
-  </>
   )
 }
 

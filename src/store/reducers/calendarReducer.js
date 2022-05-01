@@ -1,7 +1,8 @@
-import { SET_DATA } from "../actions/actionTypes";
+import { SET_DATA, SET_ERROR_MESSAGE } from "../actions/actionTypes";
 
 const initialState = {
-    calendarData: [],
+    calendarData: null,
+    errorMessage: '',
 }
 
 export const calendarReducer = (state = initialState, action) => {
@@ -12,6 +13,12 @@ export const calendarReducer = (state = initialState, action) => {
             return {
                 ...state,
                 calendarData: action.payload
+            }
+
+        case SET_ERROR_MESSAGE:
+            return {
+                ...state,
+                errorMessage: action.payload
             }
 
         default:
