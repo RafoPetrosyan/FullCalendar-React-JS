@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { useSearchParams, createSearchParams } from 'react-router-dom';
+import { useSearchParams, createSearchParams, useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 import moment from 'moment';
 import FullCalendar from '@fullcalendar/react';
@@ -12,12 +12,15 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { createAction } from "../../store/actions/createAction";
 import { GET_DATA } from "../../store/actions/actionTypes";
+import birth from './images/birth.png';
 import './Calendar.css';
 
 const Calendar = () => {
 
   // GET REDUX DATA
   const calendarData = useSelector(state => state.calendarData.calendarData);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // QUERY PARAMS
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,28 +29,23 @@ const Calendar = () => {
   const [state, setState] = useState(null);
   const [modalState, setModalState] = useState(false);
   const [year, setYear] = useState(() => (searchParams.get('year') || moment().format('YYYY')));
-  const [month, setMonth] = useState(() => (searchParams.get('month') || moment().format('M')));
+  const [month, setMonth] = useState(() => (searchParams.get('month') || `0${moment().format('M')}`));
 
 
   const calendarRef = useRef();
 
-  // console.log(calendarRef.current);
+  const getCalendarApi = () => {
+      const { current } = calendarRef;
+      return current?.getApi();
+  };
 
-
-  const defaultDate = moment('May 29, 2022').format('LL');
-
-  const dispatch = useDispatch();
-
-  useEffect(() =>{
-      // let year = searchParams.get('year') || null
-      // calendarRef.props.defaultDate = 'May 29, 2022';
-      // calendarRef.updater._calendarApi.data.currentDate = moment('05/11/21').format();
-      // console.log(moment('05/11/21').format());
+  useEffect(() => {
+      const currentDate = `${year}-${month}-01`;
+      const calendarApi = getCalendarApi();
+      calendarApi.gotoDate(currentDate);
   }, []);
 
-  
-  
-
+  console.log(+month[1]);
   // SET QUERY PARAMS AND GET DATA API
   const getData = () => {
       const query = {
@@ -60,7 +58,16 @@ const Calendar = () => {
   }
   
   useEffect(() => {
-      if(year && month) getData(); 
+      // if(year && month) getData(); 
+      if(year && month){
+          if(+year < 2030 && +year > 1970 && +month[1] > 0 && +month[1] < 13){
+              getData();
+          }else{
+              // setYear(moment().format('YYYY'));
+              // setMonth(`0${moment().format('M')}`);
+              navigate('calendar')
+          }
+      }
   }, [year, month]);
 
 
@@ -76,6 +83,7 @@ const Calendar = () => {
               id: item.id,
               start: item.date,
               end: item.to ? item.to : item.date,
+              name: item.employee_name,
             }
         })
       })
@@ -114,15 +122,17 @@ const Calendar = () => {
       })
   }
  
-  const eventClick = async (eventClick) => {
-    const url = await confirmImageUrl(eventClick.event._def.extendedProps.photo).then((url) =>{
+  const eventClick = async (event) => {
+  
+    const url = await confirmImageUrl(event.event._def.extendedProps.photo).then((url) =>{
         return url ? url : '';
     })
     const modalState = {
-        title: eventClick.event._def.title,
+        title: event.event._def.title,
         photo: url,
-        description: eventClick.event._def.extendedProps.description,
-        date: moment(eventClick.event._instance.range.start).format('ll, HH:mm'),
+        description: event.event._def.extendedProps.description,
+        date: moment(event.event._instance.range.start).format('ll, HH:mm'),
+        name: event.event._def.extendedProps.name,
     }
     setModalState(modalState);
   };
@@ -130,9 +140,12 @@ const Calendar = () => {
  
 
   const renderEventContent = (event) => {
-   
     return (
-        <div className='content'>
+        <div className='content'
+            style={{backgroundImage: event.event._def.title === 'Birthday' ? `url(${birth})` : '',
+                    color: event.event._def.title === 'Birthday' ? 'red' : 'white'
+            }}
+        >
               <b>{event.event._def.title}</b>
               <i> {moment(event.event._instance.range.start).format('HH:mm')}</i>
         </div>
@@ -178,11 +191,6 @@ const Calendar = () => {
             minute: '2-digit',
             hour12: false
           }}
-          timeFormat = {{
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false
-          }}
         />
       </div>
       
@@ -196,6 +204,7 @@ const Calendar = () => {
                 {modalState.photo &&
                     <img src={modalState.photo} className='image'
                 />}
+                <p className="name">{modalState.name}</p>
                 <p className="description">{modalState.description}</p>
                 <p className="description date">{modalState.date}</p>
                 <div className="btnDiv">

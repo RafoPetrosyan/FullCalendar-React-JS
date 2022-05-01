@@ -1,0 +1,31 @@
+.pageNotFound{
+    width: 1000px;
+    height: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.textpageNotFound{
+    font-size: 50px;
+    color: cornflowerblue;
+    font-weight: bold;
+    font-style: italic;
+
+}
+.btnpageNotFound{
+    background-color: cornflowerblue;
+    font-size: 30px;
+    color: white;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    font-style: italic;
+    cursor: pointer;
+    border-radius: 10px;
+}
+.btnpageNotFound:hover{
+    background-color: #6495eda1;
+    
+}

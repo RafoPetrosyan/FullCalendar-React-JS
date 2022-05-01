@@ -42,6 +42,12 @@
   color: white;
   align-items: flex-start;
   word-wrap: break-word;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+.fc-h-event{
+  border: none;
 }
 
 .table-responsive{
@@ -112,6 +118,12 @@
   word-wrap: break-word;
   margin-top: 0;
 }
+.name{
+  color: cornflowerblue;
+  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 0;
+}
 .image{
   width: 233px;
   height: 285px;
@@ -172,4 +184,6 @@
 }
 .fc .fc-popover{
   z-index: 999;
+  height: 200px;
+  overflow-y: auto;
 }
