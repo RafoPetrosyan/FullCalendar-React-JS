@@ -31,7 +31,7 @@ const Calendar = () => {
 
   const calendarRef = useRef();
 
-  console.log(calendarRef.current);
+  // console.log(calendarRef.current);
 
 
   const defaultDate = moment('May 29, 2022').format('LL');
@@ -103,19 +103,28 @@ const Calendar = () => {
   };
 
 
-  // function confirmImageUrl(url){
-  //     return new Promise((resolve, reject) =>{
-  //         const image = new Image();
-  //         image.src = url;
-  //         image.onload = () => resolve(url);
-  //         image.onerror = () =>  reject('');
-  //     }).catch(() => {
-  //         console.log('image not found');
-  //     })
-  // }
+  const confirmImageUrl = async (url) =>{
+      return await new Promise((resolve, reject) =>{
+          const image = new Image();
+          image.src = url;
+          image.onload = () => resolve(url);
+          image.onerror = () =>  reject('');
+      }).catch(() => {
+          console.log('image not found');
+      })
+  }
  
-  const eventClick = (eventClick) => {
-    setModalState(eventClick);
+  const eventClick = async (eventClick) => {
+    const url = await confirmImageUrl(eventClick.event._def.extendedProps.photo).then((url) =>{
+        return url ? url : '';
+    })
+    const modalState = {
+        title: eventClick.event._def.title,
+        photo: url,
+        description: eventClick.event._def.extendedProps.description,
+        date: moment(eventClick.event._instance.range.start).format('ll, HH:mm'),
+    }
+    setModalState(modalState);
   };
 
  
@@ -182,13 +191,13 @@ const Calendar = () => {
         <div className="hoverModal" onClick={() => setModalState(null)}></div>
         <div className="modal" >
                 <div className="modalHeader">
-                    <h1 className="h1">{modalState.event._def.title}</h1>
+                    <h1 className="h1">{modalState.title}</h1>
                 </div>
-                {modalState.event.extendedProps.photo &&
-                <img src={modalState.event.extendedProps.photo} className='image'
+                {modalState.photo &&
+                    <img src={modalState.photo} className='image'
                 />}
-                <p className="description">{modalState.event._def.extendedProps.description}</p>
-                <p className="description date">{moment(modalState.event._instance.range.start).format('ll, HH:mm')}</p>
+                <p className="description">{modalState.description}</p>
+                <p className="description date">{modalState.date}</p>
                 <div className="btnDiv">
                     <button className="delete" onClick={() => setModalState(null)}>Delete</button>
                     <button className="close" onClick={() => setModalState(null)}>Close</button>
