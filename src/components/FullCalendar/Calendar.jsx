@@ -15,6 +15,7 @@ import { GET_DATA } from "../../store/actions/actionTypes";
 import birth from './images/birth.png';
 import './Calendar.css';
 
+
 const Calendar = () => {
 
   // GET REDUX DATA
@@ -32,6 +33,7 @@ const Calendar = () => {
   const [year, setYear] = useState(() => (searchParams.get('year') || moment().format('YYYY')));
   const [month, setMonth] = useState(() => (searchParams.get('month') || `0${moment().format('M')}`));
 
+  const x = 5;
 
   const getCalendarApi = () => {
       const { current } = calendarRef;
@@ -97,17 +99,17 @@ const Calendar = () => {
   const monthChange = async (args) => {
 
     if(count){
-        let currentDate = await args.view.getCurrentData().viewTitle;
+      let currentDate = await args.view.getCurrentData().viewTitle;
 
-        if(currentDate.split(' ').length > 2){
-            currentDate = await args.startStr;
-        }
-        let currentMonth = +moment(currentDate).format('M');
-        if(currentMonth < 10) currentMonth = `0${currentMonth}`;
-        let currentYear = moment(currentDate).format('YYYY');
+      if(currentDate.split(' ').length > 2){
+          currentDate = await args.startStr;
+      }
+      let currentMonth = +moment(currentDate).format('M');
+      if(currentMonth < 10) currentMonth = `0${currentMonth}`;
+      let currentYear = moment(currentDate).format('YYYY');
 
-        setYear(currentYear);
-        setMonth(currentMonth);
+      setYear(currentYear);
+      setMonth(currentMonth);
     }
  
   };
