@@ -27,6 +27,7 @@ const Calendar = () => {
 
   // useState
   const [state, setState] = useState(null);
+  const [count, setCount] = useState(false);
   const [modalState, setModalState] = useState(false);
   const [year, setYear] = useState(() => (searchParams.get('year') || moment().format('YYYY')));
   const [month, setMonth] = useState(() => (searchParams.get('month') || `0${moment().format('M')}`));
@@ -37,26 +38,34 @@ const Calendar = () => {
       return current?.getApi();
   };
 
-  // console.log(getCalendarApi());
+  console.log(getCalendarApi());
 
   const queryParams = useMemo(() => ({
       year: isNaN(+year) ? moment().format('YYYY') : year,
       month: isNaN(+month) ? `0${moment().format('M')}` : month,
   }), [year, month]);
 
-  useEffect(() => {
-      const currentDate = `${queryParams.year}-${queryParams.month}-01`;
-      const calendarApi = getCalendarApi();
-      calendarApi.gotoDate(currentDate);
-  }, []);
-
-  // SET QUERY PARAMS AND GET DATA API
-  const getData = () => {
+    // SET QUERY PARAMS AND GET DATA API
+    const getData = () => {
       setSearchParams(createSearchParams(queryParams));
       const url = `?year=${queryParams.year}&month=${queryParams.month}`;
       dispatch(createAction(GET_DATA, url));
   }
-  
+
+  useEffect(() => {
+      const currentDate = `${queryParams.year}-${queryParams.month}-01`;
+      const calendarApi = getCalendarApi();
+      try {
+          calendarApi.gotoDate(currentDate);
+      } catch (error) {
+          setYear(moment().format('YYYY'));
+          setMonth(`0${moment().format('M')}`);
+          getData();
+      }
+      setCount(true);
+  }, []);
+
+
   useEffect(() => {
       getData();
   }, [queryParams]);
@@ -87,17 +96,19 @@ const Calendar = () => {
   // CURRENT DATE
   const monthChange = async (args) => {
 
-      let currentDate = await args.view.getCurrentData().viewTitle;
+    if(count){
+        let currentDate = await args.view.getCurrentData().viewTitle;
 
-      if(currentDate.split(' ').length > 2){
-          currentDate = await args.startStr;
-      }
-      let currentMonth = +moment(currentDate).format('M');
-      if(currentMonth < 10) currentMonth = `0${currentMonth}`;
-      let currentYear = moment(currentDate).format('YYYY');
+        if(currentDate.split(' ').length > 2){
+            currentDate = await args.startStr;
+        }
+        let currentMonth = +moment(currentDate).format('M');
+        if(currentMonth < 10) currentMonth = `0${currentMonth}`;
+        let currentYear = moment(currentDate).format('YYYY');
 
-      setYear(currentYear);
-      setMonth(currentMonth);
+        setYear(currentYear);
+        setMonth(currentMonth);
+    }
  
   };
 
@@ -149,6 +160,8 @@ const Calendar = () => {
       <div className="main">
 
         <FullCalendar
+          unselectAuto={false}
+          isRangeAllDay={false}
           timeZone="local"
           navLinks={true}
           ref={calendarRef}
@@ -159,7 +172,7 @@ const Calendar = () => {
           eventClick={eventClick}
           defaultView="dayGridMonth"
           eventDurationEditable={false}
-          // progressiveEventRendering={true}
+          // progressiveEventRendering={false}
           editable={true}
           scrollTime="12am"
           // droppable={true}
